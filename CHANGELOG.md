@@ -1,3 +1,12 @@
+# v0.5.120-customquota (2026-11-16)
+
+## Features
+- **Quota**: add custom quota sources — the Quota → **Custom quota** dialog maps any provider's usage API onto the existing quota rows with JSON paths: request URL, method, headers and body, an optional items path (`itemsPath: data.limits[*]` yields one row per element), used/total, absolute remaining, percent used and percent remaining, units (static or from a path), reset timestamps (ISO, epoch seconds/ms, relative seconds/minutes), unlimited flags, prepaid credit balances and name paths, so a gateway needs no provider-specific reader
+- **Quota**: the **Test** button runs the request and returns the resolved rows plus the raw response, so paths can be corrected before saving; a saved source takes precedence over the built-in reader for that connection, configured connections are listed and flagged `hasCustomQuota`, and `GET /api/usage/:connectionId` serves the resolved rows so auto-ping and depleted checks work unchanged
+- **API**: add `GET/PUT/DELETE /api/quota/custom` and `POST /api/quota/custom/test`; sources live in `settings.customQuotaSources` (no database migration, the API key is never stored) and `{{apiKey}}`, `{{accessToken}}`, `{{baseUrl}}` and similar placeholders resolve from the saved connection at request time
+- **Security**: custom quota requests go through the existing SSRF guard, and `CUSTOM_QUOTA_ALLOW_PRIVATE_HOSTS=1` opts in to LAN endpoints for self-hosted gateways
+- **Docs**: add `docs/CUSTOM_QUOTA.md` with the field reference and examples, linked from the README feature list
+
 # v0.5.119 (2026-11-11)
 
 ## Features
