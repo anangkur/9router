@@ -8,7 +8,7 @@ Reference for the two model-refresh endpoints and the dashboard buttons that cal
 - Persists one field only: `lastModelsRefreshAt` on the connection, written after a successful fetch.
 - Never rewrites the catalog on failure: an upstream error leaves the connection's stored custom models as they are.
 - Reports `added` / `removed` by diffing the live ids against the stored custom rows of that provider. It does not import the live list into the database.
-- Counts `freeCount` from the models the fetch itself marked free (`isFree`, or an id ending `-free`).
+- Counts `freeCount` from the models the fetch itself marked free (`isFree`, or an id whose trailing segment is `:free` — OpenRouter's spelling — or `-free`).
 
 ## Endpoints
 
@@ -21,13 +21,13 @@ No request body.
 ```json
 200 {
   "ok": true,
-  "connectionId": "d0b2ad4b-5b22-40ee-8d7d-02417a8272ad",
+  "connectionId": "11aa4d1f-2094-44ee-820a-d21c85deab2a",
   "provider": "openrouter",
-  "fetched": 472,
-  "freeCount": 0,
+  "fetched": 365,
+  "freeCount": 9,
   "added": ["upstage/solar-mini-4-5", "xiaomi/mimo-v2.6-flash-mopd"],
   "removed": [],
-  "lastModelsRefreshAt": "2026-11-25T05:20:35.585Z"
+  "lastModelsRefreshAt": "2026-11-25T05:46:21.022Z"
 }
 ```
 
@@ -43,27 +43,30 @@ No request body. Walks every active connection **sequentially** (upstreams rate-
 ```json
 200 {
   "ok": true,
-  "refreshed": 1,
+  "refreshed": 9,
   "results": [
     {
       "ok": true,
-      "connectionId": "d0b2ad4b-5b22-40ee-8d7d-02417a8272ad",
+      "connectionId": "11aa4d1f-2094-44ee-820a-d21c85deab2a",
       "provider": "openrouter",
-      "fetched": 472,
-      "freeCount": 0,
+      "fetched": 365,
+      "freeCount": 9,
       "added": ["…"],
       "removed": [],
-      "lastModelsRefreshAt": "2026-11-25T05:20:36.102Z"
+      "lastModelsRefreshAt": "2026-11-25T05:46:27.323Z"
     }
   ],
   "skipped": [
-    { "connectionId": "c81b61f1-59f5-4ae4-91f5-4f133b9319dd", "provider": "glm", "reason": "No live models fetcher" }
+    { "connectionId": "6fd331ee-bb4b-4a62-a002-0d1637101e74", "provider": "glm", "reason": "No live models fetcher" }
   ],
-  "errors": []
+  "errors": [
+    { "connectionId": "cead0096-5b82-4f3d-9130-09ad2605fd27", "provider": "opencode-go",
+      "error": "Provider opencode-go does not support models listing", "status": 400 }
+  ]
 }
 ```
 
-`errors[]` entries are `{connectionId, provider, error, status}`.
+`errors[]` entries are `{connectionId, provider, error, status}`; the batch itself still answers `200`.
 
 ## Dashboard
 
