@@ -41,6 +41,7 @@
 - ✅ **Multi-account** - Round-robin between accounts per provider
 - ✅ **Universal** - Works with Claude Code, Codex, Cursor, Cline, any CLI tool
 - ✅ **Custom quota sources** - Map any provider's usage API onto the quota tracker with [JSON paths](docs/CUSTOM_QUOTA.md)
+- ✅ **Live model refresh** - Re-pull a provider's model list on demand from the dashboard or the [refresh API](docs/REFRESH_MODELS.md)
 
 ---
 

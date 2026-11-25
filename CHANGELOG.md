@@ -1,3 +1,8 @@
+# Unreleased
+
+## Features
+- **Models**: add an explicit model refresh — `POST /api/providers/{id}/models/refresh` for one connection and `POST /api/providers/refresh-models` for every active one (`skipped[]` for providers without a live fetcher, `errors[]` per connection), plus `Refresh Models` / `Refresh all models` on the dashboard. The live upstream catalog is pulled on demand with no restart, stored models are left alone when the fetch fails, and only `lastModelsRefreshAt` is written (see `docs/REFRESH_MODELS.md`).
+
 # v0.5.123 (2026-11-22)
 
 ## Features
