@@ -1221,6 +1221,12 @@ export default function ProviderDetailPage() {
   };
 
   const renderModelsSection = () => {
+    // /api/providers stamps modelsRefreshable with the same capability check the
+    // refresh endpoints use, so custom compatible providers qualify too.
+    const canRefreshModels = connections.some(
+      (conn) => conn.isActive !== false && conn.modelsRefreshable === true,
+    );
+
     if (isCompatible) {
       return (
         <CompatibleModelsSection
@@ -1236,6 +1242,9 @@ export default function ProviderDetailPage() {
           onDeleteCustomModel={(modelId) => handleDeleteCustomModel(modelId, "llm", providerStorageAlias)}
           connections={connections}
           isAnthropic={isAnthropicCompatible}
+          canRefreshModels={canRefreshModels}
+          refreshingModels={refreshingModels}
+          onRefreshModels={handleRefreshModels}
         />
       );
     }
@@ -1255,9 +1264,6 @@ export default function ProviderDetailPage() {
       builtInModels: models,
       type: "llm",
     });
-    const providerInfo = OAUTH_PROVIDERS[providerId] || APIKEY_PROVIDERS[providerId] || FREE_PROVIDERS[providerId] || FREE_TIER_PROVIDERS[providerId];
-    const canRefreshModels = connections.some((conn) => conn.isActive !== false)
-      && (LIVE_MODEL_CATALOG_PROVIDERS.has(providerId) || !!providerInfo?.modelsFetcher);
 
     return (
       <div className="flex flex-wrap gap-3">

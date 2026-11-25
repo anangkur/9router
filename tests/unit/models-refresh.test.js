@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import { diffModelIds, refreshModelsForConnection } from "@/lib/providerModelsRefresh.js";
+import { diffModelIds, refreshModelsForConnection, isModelsRefreshable } from "@/lib/providerModelsRefresh.js";
 
 const connection = { id: "conn-1", provider: "openrouter" };
 
@@ -12,6 +12,14 @@ describe("diffModelIds", () => {
 
   it("tolerates missing input", () => {
     expect(diffModelIds(undefined, undefined)).toEqual({ added: [], removed: [] });
+  });
+});
+
+describe("isModelsRefreshable", () => {
+  it("qualifies custom compatible nodes, which the dashboard gate now trusts", () => {
+    expect(isModelsRefreshable("openai-compatible-chat-1816b083-0000-0000-0000-000000000000")).toBe(true);
+    expect(isModelsRefreshable("anthropic-compatible-chat-1816b083-0000-0000-0000-000000000000")).toBe(true);
+    expect(isModelsRefreshable("openrouter")).toBe(true);
   });
 });
 

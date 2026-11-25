@@ -71,7 +71,7 @@ function CompatibleModelRow({ modelId, fullModel, copied, onCopy, onDeleteAlias,
   );
 }
 
-export default function CompatibleModelsSection({ providerStorageAlias, providerDisplayAlias, modelAliases, customModels, copied, onCopy, onDeleteAlias, onAddCustomModel, onDeleteCustomModel, connections, isAnthropic }) {
+export default function CompatibleModelsSection({ providerStorageAlias, providerDisplayAlias, modelAliases, customModels, copied, onCopy, onDeleteAlias, onAddCustomModel, onDeleteCustomModel, connections, isAnthropic, canRefreshModels, refreshingModels, onRefreshModels }) {
   const [newModel, setNewModel] = useState("");
   const [adding, setAdding] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -185,6 +185,11 @@ export default function CompatibleModelsSection({ providerStorageAlias, provider
         <Button size="sm" variant="secondary" icon="download" onClick={handleImport} disabled={!canImport || importing}>
           {importing ? "Importing..." : "Import from /models"}
         </Button>
+        {canRefreshModels && (
+          <Button size="sm" variant="secondary" icon="refresh" onClick={onRefreshModels} disabled={refreshingModels}>
+            {refreshingModels ? "Refreshing..." : "Refresh Models"}
+          </Button>
+        )}
       </div>
 
       {!canImport && (
@@ -229,4 +234,7 @@ CompatibleModelsSection.propTypes = {
     isActive: PropTypes.bool,
   })).isRequired,
   isAnthropic: PropTypes.bool,
+  canRefreshModels: PropTypes.bool,
+  refreshingModels: PropTypes.bool,
+  onRefreshModels: PropTypes.func,
 };

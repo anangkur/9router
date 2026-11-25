@@ -10,6 +10,7 @@ import { APIKEY_PROVIDERS } from "@/shared/constants/config";
 import { AI_PROVIDERS, FREE_TIER_PROVIDERS, WEB_COOKIE_PROVIDERS, isOpenAICompatibleProvider, isAnthropicCompatibleProvider, isCustomEmbeddingProvider } from "@/shared/constants/providers";
 import { normalizeProviderId, normalizeProviderSpecificData } from "@/lib/providerNormalization";
 import { toProviderConnectionResponse } from "@/lib/providerConnectionResponse";
+import { isModelsRefreshable } from "@/lib/providerModelsFetch";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +71,10 @@ export async function GET() {
       return {
         ...toProviderConnectionResponse(c),
         name,
+        // Same capability check the refresh endpoints use, so the dashboard
+        // button appears for every provider the API can actually refresh
+        // (custom OpenAI/Anthropic-compatible nodes included).
+        modelsRefreshable: isModelsRefreshable(c.provider),
       };
     });
 
