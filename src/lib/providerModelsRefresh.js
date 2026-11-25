@@ -13,7 +13,8 @@ export { isModelsRefreshable } from "@/lib/providerModelsFetch";
 // the right granularity here (no cross-process lock, no restart needed).
 const inFlight = new Set();
 
-const isFreeModel = (model) => model?.isFree === true || /-free$/i.test(String(model?.id || ""));
+// Free tiers are spelled `:free` on OpenRouter and `-free` elsewhere.
+const isFreeModel = (model) => model?.isFree === true || /[:-]free$/i.test(String(model?.id || ""));
 
 /** Pure diff of live ids vs stored custom-row ids. */
 export function diffModelIds(liveModels, storedModels) {

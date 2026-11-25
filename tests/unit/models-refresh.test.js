@@ -48,7 +48,7 @@ describe("refreshModelsForConnection", () => {
     const result = await refreshModelsForConnection(connection, {
       fetchModels: async () => ({
         status: 200,
-        body: { models: [{ id: "a" }, { id: "b", isFree: true }, { id: "c-free" }] },
+        body: { models: [{ id: "a" }, { id: "b", isFree: true }, { id: "c-free" }, { id: "google/gemma-4-31b-it:free" }] },
       }),
       getStoredModels: async () => [
         { providerAlias: "openrouter", id: "a" },
@@ -62,9 +62,9 @@ describe("refreshModelsForConnection", () => {
       ok: true,
       connectionId: "conn-1",
       provider: "openrouter",
-      fetched: 3,
-      freeCount: 2,
-      added: ["b", "c-free"],
+      fetched: 4,
+      freeCount: 3,
+      added: ["b", "c-free", "google/gemma-4-31b-it:free"],
       removed: ["gone"],
     });
     expect(saveRefreshAt).toHaveBeenCalledWith("conn-1", result.lastModelsRefreshAt);
