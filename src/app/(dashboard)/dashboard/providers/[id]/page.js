@@ -98,6 +98,9 @@ export default function ProviderDetailPage() {
   const stopOneByOneRef = useRef(false);
   const [importingQoderModels, setImportingQoderModels] = useState(false);
   const [importingClineModels, setImportingClineModels] = useState(false);
+  const [refreshingModels, setRefreshingModels] = useState(false);
+  // Bumped after a refresh so the live-catalog effect re-reads the provider list.
+  const [modelsRefreshNonce, setModelsRefreshNonce] = useState(0);
   const { copied, copy } = useCopyToClipboard();
 
   const AG_RISK_STORAGE_KEY = "ag_risk_confirmed";
@@ -528,7 +531,7 @@ export default function ProviderDetailPage() {
       });
 
     return () => { cancelled = true; };
-  }, [providerId, connections]);
+  }, [providerId, connections, modelsRefreshNonce]);
 
   // Fetch suggested models from provider's public API (if configured)
   useEffect(() => {
@@ -600,6 +603,36 @@ export default function ProviderDetailPage() {
       }
     } catch (error) {
       console.log("Error deleting custom model:", error);
+    }
+  };
+
+  // Force a live re-fetch for the active connection, then re-render the list.
+  const handleRefreshModels = async () => {
+    if (refreshingModels) return;
+    const activeConnection = connections.find((conn) => conn.isActive !== false);
+    if (!activeConnection) {
+      alert(translate("Please add an active connection first"));
+      return;
+    }
+
+    setRefreshingModels(true);
+    try {
+      const res = await fetch(`/api/providers/${activeConnection.id}/models/refresh`, { method: "POST" });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        alert(translate("Failed to refresh models") + `: ${data?.error || res.status}`);
+        return;
+      }
+      await fetchCustomModels();
+      setModelsRefreshNonce((n) => n + 1);
+      const added = data.added?.length || 0;
+      const removed = data.removed?.length || 0;
+      alert(`+${added} added, -${removed} removed, ${data.fetched ?? 0} live`);
+    } catch (error) {
+      console.log("Error refreshing models:", error);
+      alert(translate("Failed to refresh models"));
+    } finally {
+      setRefreshingModels(false);
     }
   };
 
@@ -1222,6 +1255,9 @@ export default function ProviderDetailPage() {
       builtInModels: models,
       type: "llm",
     });
+    const providerInfo = OAUTH_PROVIDERS[providerId] || APIKEY_PROVIDERS[providerId] || FREE_PROVIDERS[providerId] || FREE_TIER_PROVIDERS[providerId];
+    const canRefreshModels = connections.some((conn) => conn.isActive !== false)
+      && (LIVE_MODEL_CATALOG_PROVIDERS.has(providerId) || !!providerInfo?.modelsFetcher);
 
     return (
       <div className="flex flex-wrap gap-3">
@@ -1278,6 +1314,20 @@ export default function ProviderDetailPage() {
             />
           );
         })}
+
+        {/* Refresh live model catalog for the active connection */}
+        {canRefreshModels && (
+          <button
+            onClick={handleRefreshModels}
+            disabled={refreshingModels}
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-green-500/40 px-3 py-2 text-xs text-green-600 dark:text-green-400 transition-colors hover:border-green-500 hover:bg-green-500/5 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span className="material-symbols-outlined text-sm" style={refreshingModels ? { animation: "spin 1s linear infinite" } : undefined}>
+              {refreshingModels ? "progress_activity" : "refresh"}
+            </span>
+            {refreshingModels ? translate("Refreshing...") : translate("Refresh Models")}
+          </button>
+        )}
 
         {/* Add model button — inline, same style as model chips */}
         <button

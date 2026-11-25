@@ -107,6 +107,7 @@ export default function ProvidersPage() {
   const [testingMode, setTestingMode] = useState(null);
   const [testResults, setTestResults] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
+  const [refreshingAllModels, setRefreshingAllModels] = useState(false);
   const notify = useNotificationStore();
   const searchQuery = useHeaderSearchStore((s) => s.query);
   const registerSearch = useHeaderSearchStore((s) => s.register);
@@ -263,6 +264,31 @@ export default function ProvidersPage() {
     }
   };
 
+  const handleRefreshAllModels = async () => {
+    if (refreshingAllModels) return;
+    setRefreshingAllModels(true);
+    try {
+      const res = await fetch("/api/providers/refresh-models", { method: "POST" });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        notify.error(data?.error || "Failed to refresh models");
+        return;
+      }
+      const details = (data.results || [])
+        .map((r) => `${r.provider}: +${r.added?.length || 0}/-${r.removed?.length || 0}`)
+        .join(", ");
+      const summary = `${data.refreshed} refreshed, ${data.skipped?.length || 0} skipped`
+        + (data.errors?.length ? `, ${data.errors.length} failed` : "")
+        + (details ? ` — ${details}` : "");
+      if (data.errors?.length) notify.warning(summary);
+      else notify.success(summary);
+    } catch {
+      notify.error("Failed to refresh models");
+    } finally {
+      setRefreshingAllModels(false);
+    }
+  };
+
   const compatibleProviders = providerNodes
     .filter((node) => node.type === "openai-compatible")
     .map((node) => ({
@@ -404,7 +430,16 @@ export default function ProvidersPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6 px-1 sm:px-0">
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end gap-2">
+        <Button
+          size="sm"
+          variant="secondary"
+          icon="refresh"
+          loading={refreshingAllModels}
+          onClick={handleRefreshAllModels}
+        >
+          Refresh all models
+        </Button>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
